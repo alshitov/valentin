@@ -1,7 +1,7 @@
 import os
 import sys
 import vk_api
-import requests
+import random
 import configparser
 
 
@@ -12,7 +12,9 @@ def config():
 
     return {
         'login': section['login'],
-        'id_': section['id_']
+        'token': section['token'],
+        'owner_id': section['owner_id'],
+        'from_group': section['from_group']
     }
 
 
@@ -31,13 +33,24 @@ def vk_auth(cfg):
     return session.get_api()
 
 
+def attach(upload):
+    randint = random.randint(a=1, b=10)
+    dir_ = os.path.dirname(os.path.realpath(__file__))
+    photo = '{0}/img/{1}.jpg'.format(dir_, randint)
+    photo_list = upload.photo_wall(photo)
+    return ','.join('photo{owner_id}_{id}'.format(**item) for item in photo_list)
+
+
 def main():
     cfg = config()
     session = vk_auth(cfg)
+    upload = vk_api.VkUpload(session)
+    attachment = attach(upload)
     session.wall.post(
         message='Всё в порядке! Валентин сегодня не умер!',
-        owner_id=-cfg['group_id'],
-        from_group=cfg['from_group']
+        owner_id=cfg['owner_id'],
+        from_group=cfg['from_group'],
+        attachment=attachment
     )
 
 
