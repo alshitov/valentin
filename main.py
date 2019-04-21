@@ -1,3 +1,6 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
 import os
 import sys
 import vk_api
@@ -13,11 +16,12 @@ def read_content():
 def vk_auth(content):
     session = vk_api.VkApi(
         login=content['logging']['login'],
-        token=content['logging']['token']
+        token=content['logging']['token'],
+        password=content['logging']['password']
     )
 
     try:
-        session.auth(reauth=True, token_only=True)
+        session.auth(token_only=False)
     except vk_api.AuthError as ex:
         print(ex)
         sys.exit()
@@ -28,9 +32,8 @@ def vk_auth(content):
 def rand_text(content):
     greets = content['greet']
     names = content['name']
-    rand_greet = greets[random.randint(a=0, b=len(greets))]
-    rand_name = names[random.randint(a=0, b=len(names))]
-
+    rand_greet = greets[random.randint(a=0, b=(len(greets)-1))]
+    rand_name = names[random.randint(a=0, b=(len(names)-1))]
     return rand_greet, rand_name
 
 
@@ -38,11 +41,7 @@ def attach(upload):
     randint = random.randint(a=1, b=10)
     dir_ = os.path.dirname(os.path.realpath(__file__))
     photo = '{0}/img/{1}.jpg'.format(dir_, randint)
-    photo_list = upload.photo_wall(
-        photos=photo
-    )
-
-    return ','.join('photo{owner_id}_{id}'.format(**item) for item in photo_list)
+    return ','.join('photo{owner_id}_{id}'.format(**item) for item in upload.photo_wall(photos=photo))
 
 
 def main():
